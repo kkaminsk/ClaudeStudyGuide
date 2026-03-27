@@ -4,27 +4,27 @@
 
 ## JSON Schemas (Structured Outputs)
 
-**Definition:** A JSON Schema is a declarative template that specifies the structure, types, and constraints of a JSON object. In Claude’s API, using **Structured Outputs (JSON mode)** ensures the model returns *valid, parseable JSON* conforming to the schema【2†L281-L288】. The schema is specified in `output_config.format` with `type: "json_schema"` and a JSON Schema object. Claude’s output will strictly follow this schema (with guaranteed correct types and no parse errors【20†L58-L66】).
+**Definition:** A JSON Schema is a declarative template that specifies the structure, types, and constraints of a JSON object. In Claude’s API, using **Structured Outputs (JSON mode)** ensures the model returns *valid, parseable JSON* conforming to the schema. The schema is specified in `output_config.format` with `type: "json_schema"` and a JSON Schema object. Claude’s output will strictly follow this schema (with guaranteed correct types and no parse errors).
 
 **Core Concepts:**
-- **Types & Constraints:** JSON Schema supports basic types (`string`, `number`, `boolean`, `array`, `object`) and constraints like `enum`, `minLength`, `format` (e.g. email), and regex `pattern`. For example, a field can have `"type":"string"` and `"pattern":"^[A-Za-z]+$"`. Claude will produce values that match these constraints or fail if impossible【2†L281-L288】.
+- **Types & Constraints:** JSON Schema supports basic types (`string`, `number`, `boolean`, `array`, `object`) and constraints like `enum`, `minLength`, `format` (e.g. email), and regex `pattern`. For example, a field can have `"type":"string"` and `"pattern":"^[A-Za-z]+$"`. Claude will produce values that match these constraints or fail if impossible.
 - **Required vs Optional:**  Use the `"required"` array to list mandatory properties. Omit fields not listed or use `"additionalProperties": false` to disallow unspecified fields. Required fields must appear; optional fields may be absent or null.
 - **Nested Objects/Arrays:** Schemas can nest arbitrarily, e.g. an object may have a property that is an array of objects, each with its own schema. Claude will generate nested JSON accordingly.
-- **Schema Limitations:** Claude uses a **subset** of JSON Schema (standard with some limitations【25†L330-L338】). For example, property ordering isn’t guaranteed, and certain advanced features (like references or complex `oneOf` clauses) may have limited support. Check Claude’s docs for any restrictions.
-- **Type Safety:** When using Structured Outputs or *Strict Tool Use*, Claude guarantees correct types (e.g. `"age": 30` rather than `"30"`)【23†L259-L267】. This avoids the need for custom parsing logic or retries.
+- **Schema Limitations:** Claude uses a **subset** of JSON Schema (standard with some limitations). For example, property ordering isn’t guaranteed, and certain advanced features (like references or complex `oneOf` clauses) may have limited support. Check Claude’s docs for any restrictions.
+- **Type Safety:** When using Structured Outputs or *Strict Tool Use*, Claude guarantees correct types (e.g. `"age": 30` rather than `"30"`). This avoids the need for custom parsing logic or retries.
 - **Error Handling:** If the model cannot satisfy the schema (e.g. no valid output), the response will be type `structured_failure`. Build clients to catch and handle this. With well-formed schemas, failures are rare (see Claude docs).
 
 **Best Practices:**
 - **Define Complete Schemas:** Include all expected fields with types and constraints. Use `"additionalProperties": false` to catch unexpected output.
 - **Use `enum` for Fixed Options:** For categorical fields, list allowed values with `"enum": [...]`. This guides Claude to valid outputs.
-- **Regex Patterns:** Employ `pattern` or format (like `"format":"email"`) to enforce specific formats. Claude will match patterns exactly【2†L281-L288】.
+- **Regex Patterns:** Employ `pattern` or format (like `"format":"email"`) to enforce specific formats. Claude will match patterns exactly.
 - **Order Independence:** Do not rely on property order (JSON objects are unordered). Use keys, not position.
 - **Validate Schema:** Test your schema separately (e.g. with a JSON Schema validator) to ensure it’s valid JSON Schema.
 - **Avoid Over-Complexity:** Very large or deeply nested schemas can sometimes confuse the model. Simplify where possible.
 
 **Common Pitfalls:**
 - **Missing Required Fields:** If Claude omits a required field, the output is invalid. Double-check `required` lists.
-- **Type Mismatches:** Without strict mode, Claude might output a string instead of a number (e.g. `"2"` vs `2`). Use strict/tool mode to prevent that【23†L259-L267】.
+- **Type Mismatches:** Without strict mode, Claude might output a string instead of a number (e.g. `"2"` vs `2`). Use strict/tool mode to prevent that.
 - **Hidden Placeholders:** Don’t leave templated placeholders (like `<name>`) in your schema example; the schema itself must be pure JSON.
 - **Ambiguous Schemas:** A property with type `"string"` and an email format should not allow numbers, but if Claude can’t produce an email it may fail. Ensure the schema truly matches realistic output.
 - **Schema Validation:** Always handle possible exceptions when parsing Claude’s output (even though errors should be rare in JSON mode).
@@ -43,7 +43,7 @@
   "additionalProperties": false
 }
 ```
-This schema enforces a non-empty name, a valid email, a non-negative age (integer), and an optional country chosen from a set. Claude will output JSON like `{"name":"John Smith","email":"[email protected]","age":35}` to satisfy it【2†L281-L288】.
+This schema enforces a non-empty name, a valid email, a non-negative age (integer), and an optional country chosen from a set. Claude will output JSON like `{"name":"John Smith","email":"[email protected]","age":35}` to satisfy it.
 
 **Checklist – JSON Schema:**
 - Define `"type"` for each property (object, string, number, etc.).
@@ -54,7 +54,7 @@ This schema enforces a non-empty name, a valid email, a non-negative age (intege
 - Use nested schemas for arrays/objects and `items` keyword for arrays.
 - Validate schema length and complexity; Claude can handle moderately complex schemas but test first.
 - Rely on Claude’s compliance: no need to add text-based instructions about format.
-- Remember Claude’s guaranteed schema compliance avoids JSON parse errors【20†L58-L66】.
+- Remember Claude’s guaranteed schema compliance avoids JSON parse errors.
 
 **Sample Questions (JSON Schemas):**
 1. **(MC)** In a Claude JSON schema, what is the effect of `"additionalProperties": false`?  
@@ -113,11 +113,11 @@ This schema enforces a non-empty name, a valid email, a non-negative age (intege
 
 ## Few-Shot Prompting
 
-**Definition:** Few-shot prompting (also *multishot* or *n-shot* prompting) means including a few demonstration examples in your prompt to **guide** the model’s response. Each “shot” is an input-output example. This is a form of in-context learning. As Anthropic notes, examples are one of the most reliable ways to steer Claude’s output format, tone, and structure【6†L275-L283】. Even 1–3 relevant examples can dramatically improve accuracy and consistency over zero-shot prompts【6†L275-L283】【41†L51-L59】.
+**Definition:** Few-shot prompting (also *multishot* or *n-shot* prompting) means including a few demonstration examples in your prompt to **guide** the model’s response. Each “shot” is an input-output example. This is a form of in-context learning. As Anthropic notes, examples are one of the most reliable ways to steer Claude’s output format, tone, and structure. Even 1–3 relevant examples can dramatically improve accuracy and consistency over zero-shot prompts.
 
 **Core Concepts:**
 - **Instruction Framing:** Clearly instruct Claude what you want. Break tasks into steps or bullet points if needed. Use a system prompt (e.g. `system: "You are a helpful assistant"` or a role) to set context.
-- **Examples:** Provide input-output pairs wrapped in tags. Claude docs recommend using `<examples>` and `<example>` tags to delineate them from instructions【6†L275-L283】. For instance:  
+- **Examples:** Provide input-output pairs wrapped in tags. Claude docs recommend using `<examples>` and `<example>` tags to delineate them from instructions. For instance:  
   ```xml
   <examples>
     <example>
@@ -130,26 +130,26 @@ This schema enforces a non-empty name, a valid email, a non-negative age (intege
     </example>
   </examples>
   ```
-  Good examples should be **relevant** to your task and **diverse** enough to cover edge cases【6†L275-L283】. Typically include **3–5** examples for best results【6†L287-L290】.
+  Good examples should be **relevant** to your task and **diverse** enough to cover edge cases. Typically include **3–5** examples for best results.
 - **Example Selection & Ordering:** Choose examples that closely resemble your actual use case. You may start with a simple case and include harder ones. Order can be chronological (first, second, etc.) or from easiest to hardest. Avoid giving conflicting patterns. Wrap them in `<examples>` to signal “here are demo interactions.”
-- **Positive vs Negative Examples:** By default, examples are *positive demonstrations* of correct behavior. Claude can also learn from “negative” examples of what *not* to do. The Anthropic tutorial notes: *“examples of how you want it to behave (or how you want it **not** to behave) is extremely effective”*【41†L51-L59】. To use a negative example, label or tag it clearly (e.g. “Example (BAD): ...”).
+- **Positive vs Negative Examples:** By default, examples are *positive demonstrations* of correct behavior. Claude can also learn from “negative” examples of what *not* to do. The Anthropic tutorial notes: *“examples of how you want it to behave (or how you want it **not** to behave) is extremely effective”*. To use a negative example, label or tag it clearly (e.g. “Example (BAD): ...”).
 - **Prompt Templates:** Common few-shot templates include:
-  - **Chain-of-Thought (CoT):** Provide examples where the answer includes reasoning steps inside `<thinking>` tags【8†L685-L693】. Claude will mimic that style and produce its own thought process before the answer. For instance:  
+  - **Chain-of-Thought (CoT):** Provide examples where the answer includes reasoning steps inside `<thinking>` tags. Claude will mimic that style and produce its own thought process before the answer. For instance:  
     ```xml
     <thinking>To solve, first break down the problem ... </thinking>  
     <answer>The result is 42.</answer>
     ```
-  - **Concise Answers:** If you want a brief final answer, show examples without internal reasoning or explicitly instruct “Answer concisely.” Claude’s latest models default to a more concise style【6†L378-L386】.
-  - **Formatting Examples:** Show complete examples of the final output format. Claude can often *extrapolate* formatting rules from a few correct outputs【41†L78-L86】. As one tutorial notes, *“we could just provide Claude with some correctly-formatted examples and Claude can extrapolate from there.”*【41†L78-L86】
+  - **Concise Answers:** If you want a brief final answer, show examples without internal reasoning or explicitly instruct “Answer concisely.” Claude’s latest models default to a more concise style.
+  - **Formatting Examples:** Show complete examples of the final output format. Claude can often *extrapolate* formatting rules from a few correct outputs. As one tutorial notes, *“we could just provide Claude with some correctly-formatted examples and Claude can extrapolate from there.”*
 - **Parameters Guidance:** Use model parameters wisely. A lower `temperature` (~0–0.3) makes outputs more deterministic (important for exam consistency), while higher values (~0.7) add creativity (less reliable for precise tasks). Claude’s API uses a `temperature` or `top_p`/`top_k` parameters like other LLMs. Usually, keep `temperature` low when examples require exact format. Claude also supports an explicit `thinking` parameter: if `thinking=true`, it provides chain-of-thought reasoning by default (with the model chosen).
 
 **Best Practices:**
-- **Structure with XML Tags:** As Claude docs recommend, wrap different parts of your prompt in tags (e.g. `<instructions>`, `<input>`, `<example>`) to avoid ambiguity【6†L295-L304】. This helps Claude parse the prompt reliably.
-- **System Role:** Use a system message like `"system": "You are a helpful assistant..."` to fix tone or role【6†L310-L319】.
-- **Clarity & Directness:** Explicitly state the task and desired format. Use lists for steps and be precise. Claude follows clear instructions best【6†L241-L250】.
+- **Structure with XML Tags:** As Claude docs recommend, wrap different parts of your prompt in tags (e.g. `<instructions>`, `<input>`, `<example>`) to avoid ambiguity. This helps Claude parse the prompt reliably.
+- **System Role:** Use a system message like `"system": "You are a helpful assistant..."` to fix tone or role.
+- **Clarity & Directness:** Explicitly state the task and desired format. Use lists for steps and be precise. Claude follows clear instructions best.
 - **Context and Motivation:** Brief context can improve relevance. E.g. “We need this to summarize the report for executives.”
-- **Example Diversity:** Include at least one challenging or edge-case example so Claude doesn’t overfit trivial cases【6†L281-L288】.
-- **Self-Evaluation Prompt:** You can append a request like “Before you finish, verify your answer” to catch mistakes【8†L685-L693】.
+- **Example Diversity:** Include at least one challenging or edge-case example so Claude doesn’t overfit trivial cases.
+- **Self-Evaluation Prompt:** You can append a request like “Before you finish, verify your answer” to catch mistakes.
 - **Positive/Negative Balance:** If showing a negative example, clearly label it. For instance:  
   ```xml
   <example>
@@ -161,20 +161,20 @@ This schema enforces a non-empty name, a valid email, a non-negative age (intege
   This signals what *not* to do.
 
 **Common Pitfalls:**
-- **Too Many Examples:** Overloading with examples can confuse Claude or hit the token limit. Stick to 3–5 high-quality examples【6†L287-L290】.
+- **Too Many Examples:** Overloading with examples can confuse Claude or hit the token limit. Stick to 3–5 high-quality examples.
 - **Irrelevant Examples:** Examples should mirror the actual task. Irrelevant or out-of-domain examples may mislead.
 - **Unstructured Prompts:** Writing examples directly in text without tags can cause misinterpretation. Always label examples or use `<examples>`.
 - **Forgetting the Query:** If examples look nothing like the query, Claude may ignore them. Ensure the style matches the final question.
 - **Over-reliance on Format:** Examples drive format, but also ensure the instructions themselves ask for that format (e.g. “List the items in JSON array”).
 
 **Checklist – Few-Shot Prompting:**
-- Include **3–5** clear examples in `<examples>` tags【6†L275-L283】.
-- Ensure examples are **relevant**, **diverse**, and **correct**【6†L275-L283】.
+- Include **3–5** clear examples in `<examples>` tags.
+- Ensure examples are **relevant**, **diverse**, and **correct**.
 - Wrap instructions vs examples vs user input in distinct tags (e.g. `<instructions>`, `<input>`, `<example>`).
-- Use a **system role** to define Claude’s purpose (tone, expertise)【6†L310-L319】.
+- Use a **system role** to define Claude’s purpose (tone, expertise).
 - Explicitly request the desired format (e.g. “Output should be a JSON array”).
-- Consider **chain-of-thought**: If detailed reasoning is needed, instruct Claude to “think step-by-step” or use `<thinking>` tags in examples【8†L685-L693】.
-- Use **negative examples** sparingly and clearly to show undesired output【41†L51-L59】.
+- Consider **chain-of-thought**: If detailed reasoning is needed, instruct Claude to “think step-by-step” or use `<thinking>` tags in examples.
+- Use **negative examples** sparingly and clearly to show undesired output.
 - Adjust **temperature**: Lower values for consistency in format. Use `thinking` parameter or prompts for reasoning when needed.
 
 **Sample Questions (Few-Shot):**
@@ -190,13 +190,13 @@ This schema enforces a non-empty name, a valid email, a non-negative age (intege
    B) `<examples>` and `<example>`  
    C) `<input>`  
    D) `#begin`  
-   **Answer:** B【6†L275-L283】.
+   **Answer:** B.
 
 3. **(MC)** True or False: Few-shot examples must always be formatted as complete, correct output to be effective.  
    **Answer:** True (effectiveness relies on correct demos).
 
 4. **(Short Answer)** Why might you include a `<thinking>` tag in your examples?  
-   **Answer:** To demonstrate chain-of-thought reasoning. Claude will then mimic that reasoning style in its response【8†L685-L693】.
+   **Answer:** To demonstrate chain-of-thought reasoning. Claude will then mimic that reasoning style in its response.
 
 5. **(MC)** Which strategy could improve accuracy for complex reasoning tasks?  
    A) Removing all examples.  
@@ -220,10 +220,10 @@ This schema enforces a non-empty name, a valid email, a non-negative age (intege
    B) Use `<bad_example>` tags.  
    C) Exclude it from the prompt.  
    D) None; negative examples aren’t used.  
-   **Answer:** A. Annotating it or labeling helps Claude recognize it’s an example of what **not** to do【41†L51-L59】.
+   **Answer:** A. Annotating it or labeling helps Claude recognize it’s an example of what **not** to do.
 
 9. **(Short Answer)** How does adding examples compare to adding natural language instructions?  
-   **Answer:** Examples often have a stronger effect on output style and accuracy than just instructions; they show *exactly* what is expected【6†L275-L283】.
+   **Answer:** Examples often have a stronger effect on output style and accuracy than just instructions; they show *exactly* what is expected.
 
 10. **(MC)** The term “n-shot” in prompting refers to:  
     A) Number of tokens used.  
@@ -246,8 +246,8 @@ This schema enforces a non-empty name, a valid email, a non-negative age (intege
 - **LLM-Assisted Extraction:** You can prompt Claude with extraction tasks, e.g. “Extract all phone numbers from the text into a JSON list.” Claude often excels at in-context extraction when guided with examples or schema.
 
 **Common Patterns:**  
-- **Pattern Recognition:** Detect repeating textual patterns and structure them. Example from research: from “Car 1 is yellow. Car 2 is blue…”, output could be `Car: 1, Color: Yellow; ...`【32†L75-L83】.  
-- **Keyword Extraction:** Identify salient terms. For instance, given a sentence about black holes, output the keywords “black holes, regions, space, gravitational pull”【32†L75-L83】.  
+- **Pattern Recognition:** Detect repeating textual patterns and structure them. Example from research: from “Car 1 is yellow. Car 2 is blue…”, output could be `Car: 1, Color: Yellow; ...`.  
+- **Keyword Extraction:** Identify salient terms. For instance, given a sentence about black holes, output the keywords “black holes, regions, space, gravitational pull”.  
 - **Relation Extraction:** Identify relationships between entities. E.g. “Paris is the capital of France” → `(Paris, capital_of, France)` or plain text “Paris – is the capital of – France.” These approaches leverage pattern matching or LLM reasoning.
 
 **Error Handling & Ambiguity:**
@@ -413,10 +413,10 @@ print(f"Name: {name}, Email: {email}, Phone: {phone or 'N/A'}")
 **Annotated Steps:**
 - *Define Schema & Prompt:* We create a JSON schema dict and construct a Claude prompt including instructions, `<examples>`, and `<input>`.
 - *Call Claude:* Use the API with `output_config.format = schema` to enforce output. Claude returns a JSON-parsable string.
-- *Parse JSON:* Load the JSON into a Python dict (no parse errors occur because the schema was enforced【20†L58-L66】).
+- *Parse JSON:* Load the JSON into a Python dict (no parse errors occur because the schema was enforced).
 - *Post-process:* Extract fields, handling any missing ones (e.g. treat empty string as missing phone).
 
-This pipeline ensures **zero parsing errors** thanks to Claude’s structured output mode【20†L58-L66】, and the output exactly matches our schema.
+This pipeline ensures **zero parsing errors** thanks to Claude’s structured output mode, and the output exactly matches our schema.
 
 ## Tables of Techniques
 
@@ -425,10 +425,10 @@ This pipeline ensures **zero parsing errors** thanks to Claude’s structured ou
 | Strategy           | Description | Pros | Cons |
 |--------------------|-------------|------|------|
 | **Zero-shot**      | No examples; only instructions. | Simple to write. Works if clear. | Lower accuracy on complex tasks. (Often needs many instructions.) |
-| **Few-shot**       | Provide *n* examples of input→output in prompt【6†L275-L283】. | Guides model with examples; improves accuracy and format consistency【6†L275-L283】. | Longer prompt; risk of context overflow; picking poor examples can mislead. |
-| **Chain-of-Thought** | Demonstrate step-by-step reasoning (via `<thinking>` or explicit “think through”). | Helps with multi-step problems, reasoning transparency【8†L685-L693】. | Increases verbosity; may not be needed for simple tasks; can distract if not needed. |
-| **XML Tagging**    | Wrap prompt sections (`<context>`, `<input>`, `<example>`) in tags【6†L295-L304】. | Reduces ambiguity, improves parsing of complex prompts. | More formatting overhead; requires consistency. |
-| **System Role**    | Use system message to set tone/role. | Focuses style (e.g. “You are a doctor...”); improves relevance【6†L310-L319】. | If role is mis-specified, output may be off-tone. |
+| **Few-shot**       | Provide *n* examples of input→output in prompt. | Guides model with examples; improves accuracy and format consistency. | Longer prompt; risk of context overflow; picking poor examples can mislead. |
+| **Chain-of-Thought** | Demonstrate step-by-step reasoning (via `<thinking>` or explicit “think through”). | Helps with multi-step problems, reasoning transparency. | Increases verbosity; may not be needed for simple tasks; can distract if not needed. |
+| **XML Tagging**    | Wrap prompt sections (`<context>`, `<input>`, `<example>`) in tags. | Reduces ambiguity, improves parsing of complex prompts. | More formatting overhead; requires consistency. |
+| **System Role**    | Use system message to set tone/role. | Focuses style (e.g. “You are a doctor...”); improves relevance. | If role is mis-specified, output may be off-tone. |
 
 **JSON Schema Features:**
 
@@ -476,4 +476,4 @@ gantt
 
 *(Dates are illustrative: adjust for your schedule.)*
 
-**Key References:** Official Claude/Anthropic docs on **Structured Outputs**【2†L281-L288】, **Prompting Best Practices**【6†L275-L283】【8†L685-L693】, and relevant research on data extraction【32†L75-L83】. These sources underpin the definitions and tips provided above.
+**Key References:** Official Claude/Anthropic docs on **Structured Outputs**, **Prompting Best Practices**, and relevant research on data extraction. These sources underpin the definitions and tips provided above.
