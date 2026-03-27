@@ -240,7 +240,7 @@ Consistency depends heavily on whether you maintain a single authoritative sessi
 
 ```mermaid
 flowchart TD
-  A[User task] --> O[Orchestrator / "Chief of Staff"]
+  A[User task] --> O["Orchestrator / Chief of Staff"]
   O -->|Decompose| P[Plan: subtasks + constraints]
   P --> W1[Worker/Subagent: Specialist A]
   P --> W2[Worker/Subagent: Specialist B]
