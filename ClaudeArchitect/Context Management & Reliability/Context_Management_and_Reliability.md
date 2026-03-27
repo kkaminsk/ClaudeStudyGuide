@@ -91,7 +91,7 @@ flowchart LR
     B -- No --> C[Use AI result]
     B -- Yes --> D[Send to human reviewer queue]
     D --> E[Reviewer makes judgement: approve/edit/reject]
-    E --> F[Apply (and log) changes]
+    E --> F["Apply (and log) changes"]
     F --> C[Use final output]
 ```
 Ensure your system can hand off data to humans easily (e.g. via an admin UI or messaging interface). For code tasks, tools like Pull Request bots with Claude-generated diffs plus human approval can be effective. Annotators might use spreadsheets or annotation tools (Coval or Labelbox) for labeling data. Always document reviewer roles and criteria (e.g. what triggers an escalation), and review the audit trail periodically.

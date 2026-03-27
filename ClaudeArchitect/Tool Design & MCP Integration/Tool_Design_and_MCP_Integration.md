@@ -25,13 +25,13 @@ Below is a high-level architecture flow for a typical MCP (names and components 
 
 ```mermaid
 flowchart LR
-    Client[Client (CLI/SDK/UI)] -->|REST/gRPC/GraphQL| API[API Server (Control Plane)]
+    Client["Client (CLI/SDK/UI)"] -->|REST/gRPC/GraphQL| API["API Server (Control Plane)"]
     API --> Auth{AuthN/AuthZ}
     Auth --> Validator
     Validator --> Logic[Business Logic / Controllers]
-    Logic --> DataStore[(State Store Database)]
-    Logic --> DataPlane[Manged Resource Cluster]
-    API --> Monitoring(Metrics/Logs)
+    Logic --> DataStore[("State Store Database")]
+    Logic --> DataPlane[Managed Resource Cluster]
+    API --> Monitoring["Monitoring (Metrics/Logs)"]
 ```
 
 As shown, clients (CLI/SDK/UI) send requests to the MCP’s API server.  The request is authenticated/authorized, then validated and passed to controller logic.  Controllers read/write the state store and drive changes in the data plane (actual clusters or services).  Observability hooks (metrics/logging) are emitted by the API server and controllers.  This flow ensures a clear separation between interface, control, and data layers.
