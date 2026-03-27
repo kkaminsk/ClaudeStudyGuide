@@ -31,4 +31,36 @@ This is not just a collection of notes—it's a targeted learning path aimed at 
 
 ## Repository Structure
 
-Study materials are organized by exam domain under `ClaudeArchitect/`, with each folder containing PDFs and audio files (.m4a) relevant to that topic area.
+Study materials are organized by exam domain under `ClaudeArchitect/`. Each domain folder contains three resource types with consistent naming:
+
+```
+ClaudeArchitect/
+├── Agentic Architecture & Orchestration/
+│   ├── Agentic_Architecture_and_Orchestration.md    # Study guide (Domain 1 - 27%)
+│   ├── Agentic_Architecture_and_Orchestration.pdf   # Reference material
+│   └── Agentic_Architecture_and_Orchestration.m4a   # Audio companion
+├── Claude Code Configuration & Workflows/
+│   ├── Claude_Code_Configuration_and_Workflows.md   # Study guide (Domain 2 - 20%)
+│   ├── Claude_Code_Configuration_and_Workflows.pdf  # Reference material
+│   └── Claude_Code_Configuration_and_Workflows.m4a  # Audio companion
+├── Prompt Engineering & Structured Output/
+│   ├── Prompt_Engineering_and_Structured_Output.md   # Study guide (Domain 3 - 20%)
+│   ├── Prompt_Engineering_and_Structured_Output.pdf  # Reference material
+│   └── Prompt_Engineering_and_Structured_Output.m4a  # Audio companion
+├── Tool Design & MCP Integration/
+│   ├── Tool_Design_and_MCP_Integration.md            # Study guide (Domain 4 - 18%)
+│   ├── Tool_Design_and_MCP_Integration.pdf           # Reference material
+│   └── Tool_Design_and_MCP_Integration.m4a           # Audio companion
+└── Context Management & Reliability/
+    ├── Context_Management_and_Reliability.md          # Study guide (Domain 5 - 15%)
+    ├── Context_Management_and_Reliability.pdf         # Reference material
+    └── Context_Management_and_Reliability.m4a         # Audio companion
+```
+
+### Content Formats
+
+| Format | Description |
+|--------|-------------|
+| `.md`  | Detailed study guides with key concepts, examples, and exam-relevant checklists |
+| `.pdf` | Curated reference material and visual aids |
+| `.m4a` | Audio companions for on-the-go study |
