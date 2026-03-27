@@ -11,7 +11,7 @@ For multi-agent systems, Claude’s ecosystem offers both “classic” MAS orga
 
 For session management, Claude spans a spectrum from purely application-managed sessions (Messages API is stateless) to SDK-managed sessions that are automatically persisted to disk and support **continue/resume/fork**. The Agent SDK explicitly distinguishes “conversation history” from “filesystem state”: sessions persist the former, while file checkpointing is needed to snapshot/revert file changes.
 
-Operationally, long-lived agent systems must be designed around **context as a finite, degrading resource** (“context rot”), and should use **server-side compaction**, **context editing** (tool-result/thinking clearing), and **prompt caching** to keep cost/latency sustainable. Prompt caching is ZDR-eligible and does not store raw prompt/response text; it uses in-memory KV cache representations and cryptographic hashes with minimum lifetimes (standard 5 minutes, extended 60 minutes), isolated per organization.
+Operationally, long-lived agent systems must be designed around **context as a finite, degrading resource** (“context rot”), and should use **server-side compaction**, **context editing** (tool-result/thinking clearing), and **prompt caching** to keep cost/latency sustainable. Feature availability varies by model and some context-management controls are still beta, so production designs should treat them as versioned capabilities rather than timeless assumptions. Prompt caching is ZDR-eligible and does not store raw prompt/response text; it uses in-memory KV cache representations and cryptographic hashes with minimum lifetimes (standard 5 minutes, extended 60 minutes), isolated per organization.
 
 ## Scope, assumptions, and source strategy
 
@@ -64,9 +64,9 @@ The SDK’s **context window** accumulates across turns (system prompt, tool def
 
 Subagents are a Claude-native multi-agent primitive:
 
-Subagents are separate agent instances spawned by a parent via the Agent tool. They support context isolation and parallelization, and can be configured with role prompts, tool restrictions, and model overrides.
+Subagents are separate agent instances spawned by a parent via the Agent tool. They support context isolation and parallelization, and can be configured with role prompts, tool restrictions, model overrides, or filesystem-based definitions in `.claude/agents/` when you work through Claude Code surfaces.
 A subagent’s conversation is fresh (no parent history); only the Agent tool’s prompt string bridges parent→subagent, and only the final subagent message returns parentward.
-Subagents cannot spawn their own subagents (don’t include `Agent` in a subagent’s tool list).
+In practice, subagents do not recurse unless you explicitly give them the `Agent` tool. The safest default is to omit `Agent` from a subagent’s tool list.
 
 Sessions are an SDK-level concept:
 
@@ -75,7 +75,7 @@ A session is the conversation history the SDK accumulates (prompt, tool calls/re
 Hooks and permissions are core safety controls:
 
 Hooks can block tools, audit tool calls, sanitize inputs/outputs, and track session lifecycle events.
-Permissions are evaluated in a documented order (hooks → deny rules → permission mode → allow rules → canUseTool callback). Modes include `dontAsk` (TS), `acceptEdits`, `bypassPermissions`, and `plan`; `bypassPermissions` is explicitly high-risk and is inherited by subagents.
+Claude Code surfaces expose permission modes such as `default`, `acceptEdits`, `plan`, `dontAsk`, `auto`, and `bypassPermissions`; SDK callbacks let you layer additional policy on top of those defaults. `bypassPermissions` is explicitly high-risk and is inherited by subagents.
 
 ## Designing agentic loops on Claude
 
@@ -205,7 +205,7 @@ If you need persistent environments, permissions, sessions, subagents, and deepe
 
 ### Performance optimizations that preserve loop semantics
 
-Programmatic tool calling (PTC): lets Claude write code (inside code execution) that calls your tools programmatically, reducing latency and token usage by avoiding repeated model round trips for multi-tool workflows.
+Programmatic tool calling (PTC): inside the code execution tool, Claude can write code that calls your tools programmatically, reducing latency and token usage by avoiding extra model round trips for repetitive multi-tool workflows.
 Tool search tool: supports hundreds/thousands of tools by searching/loading only what’s needed rather than stuffing all tool schemas into the context.
 Prompt caching: place stable content (tools/system/examples) early and cache it; avoid placing cache breakpoints on per-request varying blocks to prevent cache misses.
 

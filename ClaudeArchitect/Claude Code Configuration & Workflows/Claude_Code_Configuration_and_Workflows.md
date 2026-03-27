@@ -7,7 +7,7 @@ Claude Code’s configuration and automation ecosystem can be understood as four
 
 Claude Code supports a **hierarchical loading model** for CLAUDE.md and rules: organization-wide **managed policy** (OS-level path), user-wide (`~/.claude/CLAUDE.md`), project-wide (`./CLAUDE.md` or `./.claude/CLAUDE.md`), plus additional CLAUDE.md files in ancestor directories; CLAUDE.md files in **subdirectories are lazy-loaded** when Claude reads files in those directories. For scale, Anthropic recommends modularizing with `.claude/rules/` (optionally path-scoped via YAML frontmatter) and with `@path/to/import` imports (recursive up to five hops).
 
-“Custom slash commands” are now best modeled as **Skills**: a standard, YAML-frontmatter + Markdown instruction package discovered from `.claude/skills/<name>/SKILL.md` (and optionally supporting files/scripts). Skills can be invoked manually via `/skill-name`, can be made model-invocable or user-only, can restrict tools during execution, and can inject dynamic context using a safe-but-powerful preprocessor syntax `!`<command>`` that runs shell commands before Claude sees the prompt (a major security consideration). Legacy `.claude/commands/*.md` commands still work and are supported in both CLI and Agent SDK contexts; if a skill and a legacy command share a name, the **skill takes precedence**.
+“Custom slash commands” are now best modeled as **Skills**: a standard, YAML-frontmatter + Markdown instruction package discovered from `.claude/skills/<name>/SKILL.md` (and optionally supporting files/scripts). Skills can be invoked manually via `/skill-name`, can be made model-invocable or user-only, can restrict tools during execution, and can inject dynamic context using `!`<command>`` preprocessing before Claude sees the prompt. That makes skills powerful, but also security-sensitive: any shell preprocessing must be treated like executable code. Legacy `.claude/commands/*.md` commands still work and are supported in both CLI and Agent SDK contexts; if a skill and a legacy command share a name, the **skill takes precedence**.
 
 For CI/CD, there are two distinct patterns: **(A) validate and ship configuration changes** (CLAUDE.md/rules/skills/settings) like any other critical “policy-as-code,” and **(B) run Claude Code inside CI** to automate reviews, changes, and operational tasks. Official integrations exist for **GitHub Actions** (via `anthropics/claude-code-action@v1` and the Claude GitHub App) and **GitLab CI/CD** (beta, maintained by GitLab). Security hinges on least-privilege permissions, secrets isolation (e.g., masked variables/OIDC), sandboxing, and the ability to audit/observe behavior via debug logs, hooks, and OpenTelemetry telemetry export.
 
@@ -38,6 +38,17 @@ Claude Code supports multiple CLAUDE.md locations (different scopes). In officia
   Intended for preferences that apply across all projects.
 
 Anthropic summarizes the precedence principle as: **more specific locations take precedence over broader ones**, but everything is still “context,” not a strict enforcement layer.
+
+### Settings scopes: managed, user, project, and local
+
+CLAUDE.md is only one half of configuration. Claude Code also uses hierarchical settings files:
+
+- **User**: `~/.claude/settings.json`
+- **Project**: `.claude/settings.json`
+- **Local (personal overrides for one repo)**: `.claude/settings.local.json`
+- **Managed/policy**: server-managed settings, OS policy, or system-level `managed-settings.json`
+
+This distinction is exam-relevant because settings are the **enforcement** mechanism, while CLAUDE.md remains guidance. A common pattern is: put team-shared permissions, hooks, plugins, and MCP servers in project settings; keep machine-specific or experimental overrides in `settings.local.json`; and reserve managed settings for non-overrideable enterprise policy.
 
 ### Load and resolution behavior
 
@@ -160,6 +171,8 @@ Skills support structured argument substitution:
 - `${CLAUDE_SESSION_ID}` and `${CLAUDE_SKILL_DIR}` for session correlation and robust file/script referencing
 
 In the Agent SDK documentation, custom commands (legacy but still supported) also use `$1`, `$2`-style positional placeholders and `argument-hint` for autocomplete guidance.
+
+> **Surface-specific note:** Skills are a first-class Claude Code feature, while the Agent SDK defines agents, tools, and session behavior programmatically. Some `SKILL.md` frontmatter and slash-command behaviors are Claude Code surface features, so do not assume every CLI-oriented field maps 1:1 into SDK APIs.
 
 ### Permissioning and tool access
 
@@ -389,7 +402,7 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
@@ -407,7 +420,7 @@ jobs:
       pull-requests: write
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
