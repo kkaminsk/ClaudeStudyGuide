@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(head -c 200 \"/c/Temp/tsscat/ClaudeStudyGuide/ClaudeArchitect/05 - Context Management & Reliability/Context_Management_and_Reliability.md\")",
+      "Bash(head -c 200 \"/c/Temp/tsscat/ClaudeStudyGuide/ClaudeArchitect/03 - Prompt Engineering & Structured Output/Prompt_Engineering_and_Structured_Output.md\")",
+      "Bash(head -c 200 \"/c/Temp/tsscat/ClaudeStudyGuide/ClaudeArchitect/04 - Tool Design & MCP Integration/Tool_Design_and_MCP_Integration.md\")",
+      "Bash(find \"/c/Temp/tsscat/ClaudeStudyGuide/ClaudeArchitect/03 - Prompt Engineering & Structured Output\" -type f)",
+      "Bash(hexdump -C \"/c/Temp/tsscat/ClaudeStudyGuide/ClaudeArchitect/04 - Tool Design & MCP Integration/Tool_Design_and_MCP_Integration.md\")"
+    ]
+  }
+}
